@@ -51,10 +51,16 @@ function onReady() {
 
 // Check the submitted data and make it workable for all browsers
 function onSubmit(evt) {
-    evt.returnValue = validateForm(this);
 
-    if (!evt.returnValue && evt.preventDefault) {
-        evt.preventDefault();
+    try {
+        evt.returnValue = validateForm(this);
+
+        if (!evt.returnValue && evt.preventDefault) {
+            evt.preventDefault();
+        }
+
+    } catch(exception) {
+        alert(exception);
     }
 
     return evt.returnValue;
@@ -63,7 +69,15 @@ function onSubmit(evt) {
 // Validate the form
 function validateForm(form) {
 
-    var requiredFields = ['firstName', 'lastName', 'address1', 'city', 'state', 'zip', 'birthdate']
+    var requiredFields = [
+        {name: 'firstName', valid: 1},
+        {name: 'lastName', valid: 1},
+        {name: 'address1', valid: 1},
+        {name: 'city', valid: 1},
+        {name: 'state', valid: 1},
+        {name: 'zip', valid: 1},
+        {name: 'birthdate', valid: 1}];
+
     var i;
     var valid = true;
 
@@ -74,13 +88,32 @@ function validateForm(form) {
 
     // Check all the fields that need to be verified
     for (i = 0; i < requiredFields.length; i++){
-        valid &= validateRequiredField(form.elements[requiredFields[i]]);
+        var fieldValid = validateRequiredField(form.elements[requiredFields[i].name]);
+
+        // If that field is not valid, mark it as so
+        if (!fieldValid) {
+            requiredFields[i].valid = 0;
+
+        // Otherwise, clear it
+        } else {
+            requiredFields[i].valid = 1;
+            form.elements[requiredFields[i].name].style.borderColor = '';
+        }
+
+        // make sure the entire form is marked as not valid if necessary
+        valid &= fieldValid;
     }
 
+    // If the form is not valid, handle it!
     if (!valid) {
 
-       // I need to add in all my validation code here!
+        for (i = 0; i < requiredFields.length; i++) {
+            if (!requiredFields[i].valid) {
+                form.elements[requiredFields[i].name].style.borderColor = '#FF0000';
+            }
+        }
     }
+
 
     return valid;
 
@@ -88,9 +121,14 @@ function validateForm(form) {
 
 // Make sure the field is not blank spaces
 function validateRequiredField(field) {
-    var value = field.value.trim();
-    var valid = value.length > 0;
 
+    // Remove the unnecessary blanks at the front and back
+    field.value = field.value.trim();
+
+    // check to see if it's valid
+    var valid = field.value.length > 0;
+
+    // Valid like salad!
     if (valid) {
         field.className = 'form-control';
     } else {
