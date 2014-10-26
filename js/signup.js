@@ -10,7 +10,7 @@
 // set up Global variables
 var signup = document.getElementById('signup');
 
-// The main function of the page
+//// The main function of the page
 function onReady() {
 
     // Set up the necessary variables
@@ -45,11 +45,11 @@ function onReady() {
         }
     });
 
-    // WHen the user submits the form, run it through validation
+    // When the user submits the form, run it through validation
     signup.addEventListener('submit', onSubmit);
 }
 
-// Check the submitted data and make it workable for all browsers
+//// Check the submitted data and make it workable for all browsers
 function onSubmit(evt) {
 
     try {
@@ -66,9 +66,11 @@ function onSubmit(evt) {
     return evt.returnValue;
 }
 
-// Validate the form
+//// Validate the form
 function validateForm(form) {
-
+	
+	// Set up all the needed variables
+    var i;
     var requiredFields = [
         {name: 'firstName', valid: 1},
         {name: 'lastName', valid: 1},
@@ -77,49 +79,68 @@ function validateForm(form) {
         {name: 'state', valid: 1},
         {name: 'zip', valid: 1},
         {name: 'birthdate', valid: 1}];
-
-    var i;
     var valid = true;
+	var age = calculateAge(form);
+	var bdMessageElem = document.getElementById('birthdateMessage');
+	var zipRegex = new RegExp('^\\d{5}$');
+	var zip = form.elements['zip'].value;
 
-    // If Occupation is set to other, make sure it has a value
-    if (signup.elements['occupation'] == 'other') {
-        requiredFields.add('occupationOther');
+   try {
+
+	    // If Occupation is set to other, make sure it has a value
+	    if (signup.elements['occupation'] == 'other') {
+	        requiredFields.add('occupationOther');
+	    }
+	
+	    // Check all the fields that require information
+	    for (i = 0; i < requiredFields.length; i++){
+	        var fieldValid = validateRequiredField(form.elements[requiredFields[i].name]);
+	
+	        // If that field is not valid, mark it as so
+	        if (!fieldValid) {
+	            requiredFields[i].valid = 0;
+	
+	        // Otherwise, clear it
+	        } else {
+	            requiredFields[i].valid = 1;
+	            form.elements[requiredFields[i].name].style.borderColor = '';
+	        }
+	
+	        // make sure the entire form is marked as not valid if necessary
+	        valid &= fieldValid;
+	    }
+	
+		// Check the age
+		if (age < 13) {
+			valid = false;
+			requiredFields[6].valid = 0;
+			bdMessageElem.innerHTML = 'No one under 13 allowed.';		
+		} else {
+			bdMessageElem.innerHTML = '';				
+		}
+		
+		// Make sure the Zip Code has 5 numbers
+		if (!zipRegex.test(zip)) {
+			requiredFields[5].valid = 0;		
+		}
+		
+	    // If the form is not valid, handle it!
+	    if (!valid) {
+	
+	        for (i = 0; i < requiredFields.length; i++) {
+	            if (!requiredFields[i].valid) {
+	                form.elements[requiredFields[i].name].style.borderColor = '#FF0000';
+	            }
+	        }
+	    }
+    } catch(exception) {
+        alert(exception);
     }
-
-    // Check all the fields that need to be verified
-    for (i = 0; i < requiredFields.length; i++){
-        var fieldValid = validateRequiredField(form.elements[requiredFields[i].name]);
-
-        // If that field is not valid, mark it as so
-        if (!fieldValid) {
-            requiredFields[i].valid = 0;
-
-        // Otherwise, clear it
-        } else {
-            requiredFields[i].valid = 1;
-            form.elements[requiredFields[i].name].style.borderColor = '';
-        }
-
-        // make sure the entire form is marked as not valid if necessary
-        valid &= fieldValid;
-    }
-
-    // If the form is not valid, handle it!
-    if (!valid) {
-
-        for (i = 0; i < requiredFields.length; i++) {
-            if (!requiredFields[i].valid) {
-                form.elements[requiredFields[i].name].style.borderColor = '#FF0000';
-            }
-        }
-    }
-
-
+	
     return valid;
-
 }
 
-// Make sure the field is not blank spaces
+//// Make sure the field is not blank spaces
 function validateRequiredField(field) {
 
     // Remove the unnecessary blanks at the front and back
@@ -137,6 +158,19 @@ function validateRequiredField(field) {
 
     return valid;
 }
+
+//// Check their age
+function calculateAge(form) { 
+	
+	var dob = form.elements['birthdate'].value;
+
+    if (!dob) { 
+		form.elements['birthdate'].style.borderColor = '#FF0000';
+		return;
+   } 
+
+    return moment().diff(dob, 'years');
+} 
 
 
 //Don't start processing until the DOM is loaded
