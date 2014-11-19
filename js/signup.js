@@ -33,6 +33,8 @@ function onReady() {
 
         if (occupation.value == 'other') {
             signup.elements['occupationOther'].style.display = 'block';
+        } else {
+            signup.elements['occupationOther'].style.display = 'none';
         }
     });
 
