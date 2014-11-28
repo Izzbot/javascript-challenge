@@ -88,10 +88,9 @@ function validateForm(form) {
 	var zip = form.elements['zip'].value;
 
    try {
-
 	    // If Occupation is set to other, make sure it has a value
-	    if (signup.elements['occupation'] == 'other') {
-	        requiredFields.add('occupationOther');
+	    if (signup.elements['occupation'].value == 'other') {
+	        requiredFields.push({name: 'occupationOther', valid: 1});
 	    }
 	
 	    // Check all the fields that require information
